@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.cyan,
         // This makes the visual density adapt to the platform that you run
         // the app on. For desktop platforms, the controls will be smaller and
         // closer together (more dense) than on mobile platforms.
@@ -80,8 +80,6 @@ class _HomeTabBarState extends State<HomeTabBar> {
      _currentIndex = index;
    });
  }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +121,6 @@ class _HomeState extends State<Home> {
   var data = null;
   int todayGoodCount = 0;
 
-  
-
   _getCurrentLocation() {
     
 
@@ -142,11 +138,6 @@ class _HomeState extends State<Home> {
 
 
   Future getWeather() async {
-
-    Map<String, dynamic> test;
-
-    //Position position = await getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    //print(position);
     var url = "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
     http.get(url).then((response) {
       var json1 = json.decode(response.body);
@@ -184,33 +175,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // drawer: Drawer(
-      //   child: Padding(
-      //     padding: const EdgeInsets.all(8.0),
-      //     child: Column(
-      //       mainAxisAlignment: MainAxisAlignment.start,
-      //       crossAxisAlignment: CrossAxisAlignment.start,
-      //       children: [
-      //         SizedBox(height: 70),
-      //         GestureDetector(
-      //           onTap: () {
-                  
-      //           },
-      //           child: Text(
-      //             "INFO",
-      //             style: TextStyle(
-      //                 fontSize: 30,
-      //                 color: Colors.blue
-      //               )
-      //           ),
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text("Concrete Casting"),
         actions: [
           Padding(
@@ -272,8 +237,8 @@ class _HomeState extends State<Home> {
                       children: <Widget>[
                         Positioned(
                           child: Container(
-                            width: MediaQuery.of(context).size.width-100,
-                            height: 250,
+                            width: MediaQuery.of(context).size.width-50,
+                            height: 270,
                             decoration: BoxDecoration(
                               color: Colors.blue,
                               borderRadius: BorderRadius.all(Radius.circular(20))
@@ -392,21 +357,6 @@ class _HomeState extends State<Home> {
                                   ),
                                 )
                               ),
-                              // Positioned.fill(
-                              //   child: Align(
-                              //     alignment: Alignment.topCenter,
-                              //     child: Padding(
-                              //       padding: const EdgeInsets.all(20.0),
-                              //       child: Text(
-                              //         "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(data["forecast"]["forecastday"][i]["date_epoch"]))}",
-                              //         style: TextStyle(
-                              //           fontSize: 30,
-                              //           color: Colors.white
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   )
-                              // ),
                               Positioned.fill(
                                 child: Align(
                                   alignment: Alignment.bottomCenter,
