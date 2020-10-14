@@ -14,4 +14,4 @@ I have been always part of the architecture world, since I was a little kid my d
 
 ## Mockups
 
-![alt text](https://github.com/mabadinakach/Concrete_Casting/mockups/home.png?raw=true)
+![alt text](https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/home.png?raw=true)
