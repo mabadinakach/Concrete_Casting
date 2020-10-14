@@ -662,7 +662,10 @@ class _DetailHourState extends State<DetailHour> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.data["time"].substring(11))
+        title: Text(widget.data["time"].substring(11)),
+        leading: IconButton(icon: Icon(Icons.close), onPressed: () {
+          Navigator.of(context).pop();
+        },),
       ),
       body: ListView.builder(
         itemCount: 1,
@@ -808,6 +811,8 @@ class _InfoState extends State<Info> {
           padding: const EdgeInsets.all(10.0),
           child: Column(
             children: [
+              Text("The ACI defines cold weather when the average daily temperature for more than three consecutive days is less than 5° C and if the temperature rises above 10° C for more than half a day it is no longer considered cold weather.\n\nAci defines hot weather when any combination of high air temperature, low relative humidity, and ambient velocity affect the quality of fresh and hardened ants.", style: TextStyle(fontSize: 20)),
+              SizedBox(height: 20),
               Text("Preparation of Mixture", style: TextStyle(
                 fontSize: 30
               ),),
