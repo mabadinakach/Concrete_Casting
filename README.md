@@ -1,16 +1,17 @@
-# concrete_casting
+# Concrete Casting
 
-A new Flutter project.
+An app that it is designed to tell you when is the right time to do the concrete casting based on the weather (weatherapi.com)
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project currently is only available for iOS
 
-A few resources to get you started if this is your first Flutter project:
+In order to run the project you will have to clone the repo and open it up on Xcode (ios/Runner/Runner.xcodeproj) (Sidenote: you will not be able to run it in your device unless you have a developer account, if you have one just change the Signing Profile), and just hit the run button
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Motivation
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+I have been always part of the architecture world, since I was a little kid my dad took me a lot of times to see his buildings, here I learned the basics of it. Now that I am older and some of my friends are studying architecture, we were wondering why do people that want to do the casting have to check the weather and make sure that it will not rain in a few hours, so we came up with an idea of developing an app that will tell you the best time of the day to do your casting based on the weather.
+
+## Mockups
+
+![alt text](https://github.com/mabadinakach/Concrete_Casting/mockups/home.png?raw=true)
