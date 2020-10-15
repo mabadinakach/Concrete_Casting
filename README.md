@@ -4,7 +4,7 @@ An app that it is designed to tell you when is the right time to do the concrete
 
 ## Getting Started
 
-Make sure to allow location priviliges to the app to retrieve the weather from the current location.
+**Make sure to allow location priviliges to the app to retrieve the weather from the current location.**
 
 ### iOS
 
