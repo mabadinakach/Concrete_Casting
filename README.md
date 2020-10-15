@@ -27,7 +27,8 @@ This project was created using **Flutter** and calling the **weatherapi.com** AP
 * http (^0.12.0+4)
 * geolocator (^6.0.0+4)
 * intl (^0.16.1)
-* permission_handler: ^5.0.1+1
+* permission_handler (^5.0.1+1)
+* neumorphic (^0.4.0)
 
 ## Mockups
 

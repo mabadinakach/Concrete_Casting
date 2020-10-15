@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:neumorphic/neumorphic.dart';
 
 
 var apiKey = "2627cfdef0f5433d976172353201310";
@@ -12,6 +13,11 @@ String temp = "temp_c";
 String avgTemp = "avgtemp_c";
 String maxTemp = "maxtemp_c";
 String minTemp = "mintemp_c";
+
+Color colorText = Color.fromRGBO(114, 138, 183, 1);
+Color colorBackground = Color.fromRGBO(240, 240, 243, 1);
+Color detailGreen = Color.fromRGBO(131,219,214,1);
+Color detailRed = Color.fromRGBO(251, 117, 117, 1);
 
 void main() {
   runApp(MyApp());
@@ -156,6 +162,11 @@ class _HomeState extends State<Home> {
     });
   }
 
+  int calculatePercentage(int n) {
+    int x = 15-n.abs();
+    return(100-x*10);
+  }
+
 
   Future getWeather() async {
     var url = "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
@@ -170,18 +181,22 @@ class _HomeState extends State<Home> {
           });
           todayGoodCount = 0;
           for(var hour = 0; hour < json1["forecast"]["forecastday"][i]["hour"].length; hour++) {
-              if (json1["forecast"]["forecastday"][i]["hour"][hour]["is_day"] == 1 && int.parse(json1["forecast"]["forecastday"][i]["hour"][hour]["chance_of_rain"]) < 30 && json1["forecast"]["forecastday"][i]["hour"][hour]["will_it_rain"] == 0 && data["forecast"]["forecastday"][i]["hour"][hour][temp] >= 5 && data["forecast"]["forecastday"][i]["hour"][hour][temp] <= 28) {
+              if (json1["forecast"]["forecastday"][i]["hour"][hour]["is_day"] == 1 && int.parse(json1["forecast"]["forecastday"][i]["hour"][hour]["chance_of_rain"]) < 30 && json1["forecast"]["forecastday"][i]["hour"][hour]["will_it_rain"] == 0 && data["forecast"]["forecastday"][i]["hour"][hour][temp] >= 5 && data["forecast"]["forecastday"][i]["hour"][hour][temp] <= 25) {
                 todayGoodCount ++;
+                
                 data["forecast"]["forecastday"][i]["count"] = todayGoodCount;
                 data["forecast"]["forecastday"][i]["hour"][hour]["good"] = true;
+                print(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt());
+                print(calculatePercentage(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt()));
+                data["forecast"]["forecastday"][i]["hour"][hour]["efficiency"] = calculatePercentage(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt());
                 continue outer;
               }
           }
         }
         // TEST DATA
 
-        // data["forecast"]["forecastday"][0]["count"] = null;
-        // data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
+        data["forecast"]["forecastday"][0]["count"] = null;
+        data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
       }
     });
 
@@ -200,46 +215,46 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Concrete Casting"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 30,
-                  child: InkWell(
-                    child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
-                    onTap: () {
-                      setState(() {
-                        temp = "temp_f";
-                        avgTemp = "avgtemp_f";
-                        maxTemp = "maxtemp_f";
-                        minTemp = "mintemp_f";
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 30,
-                  child: InkWell(
-                    child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
-                    onTap: () {
-                      setState(() {
-                        temp = "temp_c";
-                        avgTemp = "avgtemp_c";
-                        maxTemp = "maxtemp_c";
-                        minTemp = "mintemp_c";
-                      });
-                    },
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
+      appBar: NeuAppBar(
+        title: Text("Concrete Casting", style: TextStyle(fontSize: 20)),
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.all(8.0),
+        //     child: Row(
+        //       children: [
+        //         Container(
+        //           width: 30,
+        //           child: InkWell(
+        //             child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
+        //             onTap: () {
+        //               setState(() {
+        //                 temp = "temp_f";
+        //                 avgTemp = "avgtemp_f";
+        //                 maxTemp = "maxtemp_f";
+        //                 minTemp = "mintemp_f";
+        //               });
+        //             },
+        //           ),
+        //         ),
+        //         SizedBox(width: 10),
+        //         Container(
+        //           width: 30,
+        //           child: InkWell(
+        //             child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
+        //             onTap: () {
+        //               setState(() {
+        //                 temp = "temp_c";
+        //                 avgTemp = "avgtemp_c";
+        //                 maxTemp = "maxtemp_c";
+        //                 minTemp = "mintemp_c";
+        //               });
+        //             },
+        //           ),
+        //         )
+        //       ],
+        //     ),
+        //   ),
+        // ],
       ),
       body: ListView.builder(
         itemCount: 1,
@@ -250,102 +265,154 @@ class _HomeState extends State<Home> {
             children: <Widget>[
               data != null ? Column(
                 children: [
-                  SizedBox(height: 20),
-                  
-                  SizedBox(height: 20),
-                  InkWell(
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          width: 30,
+                          child: InkWell(
+                            child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.indigo:Colors.black), textAlign: TextAlign.center,),
+                            onTap: () {
+                              setState(() {
+                                temp = "temp_f";
+                                avgTemp = "avgtemp_f";
+                                maxTemp = "maxtemp_f";
+                                minTemp = "mintemp_f";
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Container(
+                          width: 30,
+                          child: InkWell(
+                            child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.indigo:Colors.black), textAlign: TextAlign.center,),
+                            onTap: () {
+                              setState(() {
+                                temp = "temp_c";
+                                avgTemp = "avgtemp_c";
+                                maxTemp = "maxtemp_c";
+                                minTemp = "mintemp_c";
+                              });
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: NeumorphicContainer(bevel: 5, color: colorBackground,child: Text("Today", style: TextStyle(fontSize: 20, color: colorText, fontWeight: FontWeight.bold))),
+                      ),
+                    ],
+                  ),
+                  GestureDetector(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(
                                 builder: (BuildContext context) => new DayDetail(data: data["forecast"]["forecastday"][0], today: true, weather: data["current"][temp].toString(),)));
                     },
-                                      child: Stack(
-                      children: <Widget>[
-                        Positioned(
-                          child: Container(
-                            width: MediaQuery.of(context).size.width-50,
-                            height: 270,
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.all(Radius.circular(20))
-                            ),
-                          )
-                        ),
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Text(
-                                DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(data["current"]["last_updated_epoch"]*1000)),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  color: Colors.white
+                    child: NeumorphicContainer(
+                      color: colorBackground,
+                      bevel: 3,
+                      // color: Colors.indigo,
+                      child: Stack(
+                        children: <Widget>[
+                          Positioned(
+                            child: Container(
+                              width: MediaQuery.of(context).size.width-200,
+                              height: 170,
+                              decoration: BoxDecoration(
+                                //color: Colors.blue,
+                                borderRadius: BorderRadius.all(Radius.circular(20))
+                              ),
+                            )
+                          ),
+                          Positioned.fill(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.all(0.0),
+                                child: Text(
+                                  DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(data["current"]["last_updated_epoch"]*1000)),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    color: colorText
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        ),
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 30),
-                              child: Image.network("http:${data["forecast"]["forecastday"][0]["day"]["condition"]["icon"]}")
-                            ),
-                          )
-                        ),
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "${data["current"][temp].toString()}º",
-                              style: TextStyle(
-                                fontSize: 50,
-                                color: Colors.white
+                            )
+                          ),
+                          // Positioned.fill(
+                          //   child: Align(
+                          //     alignment: Alignment.bottomCenter,
+                          //     child: Padding(
+                          //       padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                          //       child: Image.network("http:${data["forecast"]["forecastday"][0]["day"]["condition"]["icon"]}")
+                          //     ),
+                          //   )
+                          // ),
+                          Positioned.fill(
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "${data["current"][temp].toString()}º",
+                                  style: TextStyle(
+                                    fontSize: 70,
+                                    color: colorText,
+                                    fontWeight: FontWeight.bold
+                                  ),
+                                ),
                               ),
-                            ),
-                          )
-                        ),
-                        data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
-                          top: 10,
-                          left: 10,
-                          child: Opacity(
-                            opacity: 1,
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                shape: BoxShape.circle,
-                              ),
+                            )
+                          ),
+                          data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
+                            top: 0,
+                            left: 5,
+                            child: Opacity(
+                              opacity: 1,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: colorText,
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                            )
+                          ),
+                          data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
+                          top: 0,
+                          left: 5,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            child: Center(
+                              child: Text(
+                                "${data["forecast"]["forecastday"][0]["count"].toString()}",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white
+                                ),
+                              )
                             )
                           )
                         ),
-                        data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          child: Center(
-                            child: Text(
-                              "${data["forecast"]["forecastday"][0]["count"].toString()}",
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white
-                              ),
-                            )
-                          )
-                        )
+                        ]
                       ),
-                      ]
                     ),
                   ),
                 ],
               ):SizedBox(),
 
-              SizedBox(height: 70),
+              SizedBox(height: 10),
               if (permissionDenied == true) 
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -365,7 +432,7 @@ class _HomeState extends State<Home> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("Next Days", style: TextStyle(fontSize: 30)),
+                    child: NeumorphicContainer(bevel: 5, color: colorBackground,child: Text("Next Days", style: TextStyle(fontSize: 20, color: colorText, fontWeight: FontWeight.bold))),
                   ),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -373,85 +440,106 @@ class _HomeState extends State<Home> {
                     children: <Widget>[
                       for (var i = 1; i<data["forecast"]["forecastday"].length; i++) Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
+                        child: GestureDetector(
                           onTap: () {
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (BuildContext context) => new DayDetail(data: data["forecast"]["forecastday"][i], today: false, weather: "",)));
                           },
-                          child: Stack(
-                            children: <Widget>[
-                              Positioned(
-                                child: Container(
-                                  width: MediaQuery.of(context).size.width-200,
-                                  height: 250,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue,
-                                    borderRadius: BorderRadius.all(Radius.circular(20))
-                                  ),
-                                )
-                              ),
-                              Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Padding(
-                                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                                    child: Image.network("http:${data["forecast"]["forecastday"][i]["day"]["condition"]["icon"]}")
-                                    // child: Text(
-                                    //   "${data["forecast"]["forecastday"][i]["day"]["condition"]["text"]}",
-                                    //   style: TextStyle(
-                                    //     fontSize: 20,
-                                    //     color: Colors.white
-                                    //   ),
-                                    //   textAlign: TextAlign.center,
-                                    // ),
-                                  ),
-                                )
-                              ),
-                              Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "${data["forecast"]["forecastday"][i]["day"][avgTemp].toString()}º",
-                                    style: TextStyle(
-                                      fontSize: 50,
-                                      color: Colors.white
-                                    ),
-                                  ),
-                                )
-                              ),
-                              Positioned(
-                                top: 10,
-                                left: 10,
-                                child: Opacity(
-                                  opacity: 1,
+                          child: NeumorphicContainer(
+                            color: Color.fromRGBO(240, 240, 243, 1),
+                            bevel: 3,
+                                                      child: Stack(
+                              children: <Widget>[
+                                Positioned(
                                   child: Container(
-                                    width: 40,
-                                    height: 40,
+                                    width: MediaQuery.of(context).size.width-200,
+                                    height: 250,
                                     decoration: BoxDecoration(
-                                      color: Colors.orange,
-                                      shape: BoxShape.circle,
+                                      //color: Colors.blue,
+                                      borderRadius: BorderRadius.all(Radius.circular(20))
                                     ),
+                                  )
+                                ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                                      child: Image.network("http:${data["forecast"]["forecastday"][i]["day"]["condition"]["icon"]}")
+                                      // child: Text(
+                                      //   "${data["forecast"]["forecastday"][i]["day"]["condition"]["text"]}",
+                                      //   style: TextStyle(
+                                      //     fontSize: 20,
+                                      //     color: Colors.white
+                                      //   ),
+                                      //   textAlign: TextAlign.center,
+                                      // ),
+                                    ),
+                                  )
+                                ),
+                                Positioned.fill(
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(0.0),
+                                    child: Text(
+                                      DateFormat('EEE').format(DateTime.fromMillisecondsSinceEpoch(data["forecast"]["forecastday"][i]["date_epoch"]*1000)),
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 30,
+                                        color: colorText
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ),
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "${data["forecast"]["forecastday"][i]["day"][avgTemp].toString()}º",
+                                      style: TextStyle(
+                                        fontSize: 70,
+                                        color: Color.fromRGBO(114, 138, 183, 1),
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                  )
+                                ),
+                                data["forecast"]["forecastday"][i]["count"] == null ? SizedBox() :Positioned(
+                                  top: 5,
+                                  left: 10,
+                                  child: Opacity(
+                                    opacity: 1,
+                                    child: Container(
+                                      width: 30,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: colorText,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    )
+                                  )
+                                ),
+                                data["forecast"]["forecastday"][i]["count"] == null ? SizedBox() : Positioned(
+                                top: 5,
+                                left: 10,
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  child: Center(
+                                    child: Text(
+                                      "${data["forecast"]["forecastday"][i]["count"].toString()}",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white
+                                      ),
+                                    )
                                   )
                                 )
                               ),
-                              Positioned(
-                              top: 10,
-                              left: 10,
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                child: Center(
-                                  child: Text(
-                                    "${data["forecast"]["forecastday"][i]["count"].toString()}",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.white
-                                    ),
-                                  )
-                                )
-                              )
+                              ]
                             ),
-                            ]
                           ),
                         ),
                       ),
@@ -495,148 +583,151 @@ class _DayDetailState extends State<DayDetail> {
     return Scaffold(
       appBar: AppBar(
           title: Text(DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false)),
-        )
+        ),
+        backgroundColor: Colors.white,
       ),
       body: Container(
-        color: widget.data["count"] != null ? Colors.lightGreen:Colors.red[200],
+        color: widget.data["count"] != null ? detailGreen:detailRed,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 30),
-            Text(
-              "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false))}",
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 30),
+              Text(
+                "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false))}",
+                style: TextStyle(
+        fontSize: 30,
+        color: Colors.white
+                )
+              ),
+              SizedBox(height: 20),
+              Text(
+        widget.today ? "${widget.weather}º" : "${widget.data["day"][avgTemp].toString()}º",
+        style: TextStyle(
+          fontSize: 140,
+          color: Colors.white,
+          fontWeight: FontWeight.bold
+        )
+                ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+        children: [
+          Opacity(
+            opacity: 0.6,
+            child: Text(
+              "${widget.data["day"][minTemp].toString()}º",
               style: TextStyle(
-                fontSize: 50,
+                fontSize: 40,
                 color: Colors.white
               )
             ),
-            Text(
-              widget.today ? "${widget.weather}º" : "${widget.data["day"][avgTemp].toString()}º",
-              style: TextStyle(
-                fontSize: 140,
-                color: Colors.white
-              )
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Opacity(
-                    opacity: 0.6,
-                    child: Text(
-                      "${widget.data["day"][minTemp].toString()}º",
-                      style: TextStyle(
-                        fontSize: 40,
-                        color: Colors.white
-                      )
-                    ),
-                  ),
-                  Spacer(),
-                  Text(
-                    "${widget.data["day"][maxTemp].toString()}º",
-                    style: TextStyle(
-                      fontSize: 40,
-                      color: Colors.white
-                    )
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 30,),
-            widget.data["count"] == null ? Text(
-              "Today is NOT a good day for casting",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 30,
-                color: Colors.white
-              ),
-            ):SizedBox(),
-            for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
-              "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 30,
-                color: Colors.white
-              ),
-            ):SizedBox(),
-            //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
-            Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: SafeArea(
-                              child: Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20))
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                    children: <Widget>[
-                      for(var i = 0; i<widget.data["hour"].length; i++) InkWell(
-                        onTap: () {
-                          Navigator.push(context, SlideRightRoute(page: DetailHour(data: widget.data["hour"][i])));
-                        }, 
-                        child: Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                child: Container(
-                                  width: MediaQuery.of(context).size.width-350,
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    color: widget.data["hour"][i]["good"] == true ? Colors.green: widget.data["hour"][i]["time_epoch"] == DateTime.now() ? Colors.red : Colors.blue,
-                                    borderRadius: BorderRadius.all(Radius.circular(10))
-                                  ),
-                                )
-                              ),
-                              Positioned.fill(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: Text(
-                                      widget.data["hour"][i]["time"].substring(11),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.white
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ),
-                              Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    "${widget.data["hour"][i][temp].toString()}º",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: Colors.white
-                                    ),
-                                  ),
-                                )
-                              ),
-                              Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Image.network("http:${widget.data["hour"][i]["condition"]["icon"]}", height: 40,)
-                                )
-                              ),
-                            ]
-                          ),
-                        ),
-                      )
-                    ]
-                    )
-                  ),
+          ),
+          Spacer(),
+          Text(
+            "${widget.data["day"][maxTemp].toString()}º",
+            style: TextStyle(
+              fontSize: 40,
+              color: Colors.white
+            )
+          ),
+        ],
                 ),
               ),
+              SizedBox(height: 30,),
+              widget.data["count"] == null ? Text(
+                "Today is NOT a good day for casting",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+        fontSize: 30,
+        color: Colors.white
+                ),
+              ):SizedBox(),
+              for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
+                "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}\n\n Efficiency in casting: %${widget.data["hour"][i]["efficiency"].toString()}",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+        fontSize: 30,
+        color: Colors.white
+                ),
+              ):SizedBox(),
+              //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
+              Spacer(),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: SafeArea(
+                      child: Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(Radius.circular(20))
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+            children: <Widget>[
+              for(var i = 0; i<widget.data["hour"].length; i++) InkWell(
+                onTap: () {
+                  Navigator.push(context, SlideRightRoute(page: DetailHour(data: widget.data["hour"][i])));
+                }, 
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width-350,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: widget.data["hour"][i]["good"] == true ? detailGreen: widget.data["hour"][i]["time_epoch"] == DateTime.now() ? detailRed : colorText,
+                            borderRadius: BorderRadius.all(Radius.circular(10))
+                          ),
+                        )
+                      ),
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              widget.data["hour"][i]["time"].substring(11),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white
+                              ),
+                            ),
+                          ),
+                        )
+                      ),
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "${widget.data["hour"][i][temp].toString()}º",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Colors.white
+                            ),
+                          ),
+                        )
+                      ),
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Image.network("http:${widget.data["hour"][i]["condition"]["icon"]}", height: 40,)
+                        )
+                      ),
+                    ]
+                  ),
+                ),
+              )
+            ]
             )
-          ],
+          ),
         ),
+                ),
+              )
+            ],
+          ),
       ),
     );
   }
@@ -656,6 +747,7 @@ class _DetailHourState extends State<DetailHour> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(widget.data["time"].substring(11)),
         leading: IconButton(icon: Icon(Icons.close), onPressed: () {
           Navigator.of(context).pop();
@@ -665,7 +757,7 @@ class _DetailHourState extends State<DetailHour> {
         itemCount: 1,
         itemBuilder: (BuildContext context, int index) {
         return Table(
-          border: TableBorder(horizontalInside: BorderSide(width: 1, color: Colors.blue, style: BorderStyle.solid)),
+          border: TableBorder(horizontalInside: BorderSide(width: 1, color: colorText, style: BorderStyle.solid)),
           //columnWidths: {0: FractionColumnWidth(.4), 1: FractionColumnWidth(.2), 2: FractionColumnWidth(.4)},
           children: [
             TableRow(
@@ -796,7 +888,8 @@ class _InfoState extends State<Info> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Info")
+        title: Text("Information"),
+        backgroundColor: Colors.white,
       ),
       body: ListView.builder(
         itemCount: 1,
@@ -891,4 +984,92 @@ class SlideRightRoute extends PageRouteBuilder {
                 child: child,
               ),
         );
+}
+
+
+// From https://medium.com/flutter-community/neumorphic-designs-in-flutter-eab9a4de2059
+
+class NeumorphicContainer extends StatefulWidget {
+  final Widget child;
+  final double bevel;
+  final Offset blurOffset;
+  final Color color;
+
+  NeumorphicContainer({
+    Key key,
+    this.child,
+    this.bevel = 10.0,
+    this.color,
+  })  : this.blurOffset = Offset(bevel / 2, bevel / 2),
+        super(key: key);
+
+  @override
+  _NeumorphicContainerState createState() => _NeumorphicContainerState();
+}
+
+class _NeumorphicContainerState extends State<NeumorphicContainer> {
+  bool _isPressed = false;
+
+  void _onPointerDown(PointerDownEvent event) {
+    setState(() {
+      _isPressed = true;
+    });
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    setState(() {
+      _isPressed = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = this.widget.color ?? Theme.of(context).backgroundColor;
+
+    return Listener(
+      onPointerDown: _onPointerDown,
+      onPointerUp: _onPointerUp,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(24.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.bevel * 10),
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _isPressed ? color : color.mix(Colors.black, .1),
+                _isPressed ? color.mix(Colors.black, .05) : color,
+                _isPressed ? color.mix(Colors.black, .05) : color,
+                color.mix(Colors.white, _isPressed ? .2 : .5),
+              ],
+              stops: [
+                0.0,
+                .3,
+                .6,
+                1.0,
+              ]),
+          boxShadow: _isPressed ? null : [
+            BoxShadow(
+              blurRadius: widget.bevel,
+              offset: -widget.blurOffset,
+              color: color.mix(Colors.white, .6),
+            ),
+            BoxShadow(
+              blurRadius: widget.bevel,
+              offset: widget.blurOffset,
+              color: color.mix(Colors.black, .3),
+            )
+          ],
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+extension ColorUtils on Color {
+  Color mix(Color another, double amount) {
+    return Color.lerp(this, another, amount);
+  }
 }
