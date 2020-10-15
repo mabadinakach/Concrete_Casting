@@ -36,3 +36,13 @@ This project was created using **Flutter** and calling the **weatherapi.com** AP
     <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/detail_day.png?raw=true" width="120">
     <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/info.png?raw=true" width="120">
 </p>
+
+## Screenshots
+
+<p float="left">
+    <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/screenshots/1.jpeg?raw=true" width="120">
+    <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/screenshots/2.jpeg?raw=true" width="120">
+    <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/screenshots/3.jpeg?raw=true" width="120">
+    <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/screenshots/4.jpeg?raw=true" width="120">
+    <img src="https://github.com/mabadinakach/Concrete_Casting/blob/master/mockups/screenshots/5.jpeg?raw=true" width="120">
+</p>
