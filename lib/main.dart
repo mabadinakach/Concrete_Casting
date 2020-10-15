@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 var apiKey = "2627cfdef0f5433d976172353201310";
@@ -112,6 +113,28 @@ class _HomeState extends State<Home> {
   final GeolocatorPlatform geolocator = GeolocatorPlatform.instance;
   Position _currentPosition;
 
+  bool permissionDenied = false;
+
+  Future checkPermission() async {
+    var status = await Permission.location.status;
+    print(status);
+    // if (await Permission.speech.isPermanentlyDenied) {
+    //   // The user opted to never again see the permission request dialog for this
+    //   // app. The only way to change the permission's status now is to let the
+    //   // user manually enable it in the system settings.
+      
+    // }
+
+    if (await Permission.location.isDenied || await Permission.location.isRestricted) {
+      
+      setState(() {
+        permissionDenied = true;  
+      });
+      
+    }
+  }
+
+  
   
 
   List<String> text = [];
@@ -163,8 +186,9 @@ class _HomeState extends State<Home> {
   @override
   void initState() { 
     super.initState();
+    checkPermission();
     //getWeather();
-    _getCurrentLocation();
+    if (permissionDenied == false ) _getCurrentLocation();
   }
 
   
@@ -279,7 +303,7 @@ class _HomeState extends State<Home> {
                             ),
                           )
                         ),
-                        Positioned(
+                        data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
                           top: 10,
                           left: 10,
                           child: Opacity(
@@ -294,7 +318,7 @@ class _HomeState extends State<Home> {
                             )
                           )
                         ),
-                        Positioned(
+                        data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
                         top: 10,
                         left: 10,
                         child: Container(
@@ -318,7 +342,15 @@ class _HomeState extends State<Home> {
               ):SizedBox(),
 
               SizedBox(height: 70),
-              if (data == null)  Padding(
+              if (permissionDenied == true) 
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Location permission denied, please allow it to retrieve weather", style: TextStyle(
+                    fontSize: 30,
+
+                  ),textAlign: TextAlign.center,),
+                )
+               else if (data == null && permissionDenied == false)  Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(child: CircularProgressIndicator()),
               )
@@ -423,7 +455,10 @@ class _HomeState extends State<Home> {
                     )
                   ),
                 ],
-              )               
+              )    
+
+              
+                         
             ]
           ),
         );
