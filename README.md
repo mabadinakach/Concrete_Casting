@@ -20,7 +20,13 @@ I have been always part of the architecture world, since I was a little kid my d
 
 ## Technologies
 
-This project was created using Flutter and calling the weatherapi.com API. Mockups were made using Figma
+This project was created using **Flutter** and calling the **weatherapi.com** API. Mockups were made using **Figma**
+
+## Packages
+
+* http (^0.12.0+4)
+* geolocator (^6.0.0+4)
+* intl (^0.16.1)
 
 ## Mockups
 
