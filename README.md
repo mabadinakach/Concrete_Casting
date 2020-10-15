@@ -16,7 +16,7 @@ In order to run the project for android open it up in Android Studio, connect yo
 
 ## Motivation
 
-I have been always part of the architecture world, since I was a little kid my dad took me a lot of times to see his buildings, here I learned the basics of it. Now that I am older and some of my friends are studying architecture, we were wondering why do people that want to do the casting have to check the weather and make sure that it will not rain in a few hours, so we came up with an idea of developing an app that will tell you the best time of the day to do your casting based on the weather.
+I have been always part of the architecture world, since I was a little kid my dad took me a lot of times to see his buildings, here I learned the basics of it. Now that I am older and some of my friends are studying architecture, we were wondering why do people that want to do the casting have to check the weather and make sure that it will not rain in a few hours, so we came up with an idea of developing an app that will tell you the best time of the day to do your casting based on the weather. (@davidjessurun)
 
 ## Technologies
 
