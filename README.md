@@ -4,9 +4,15 @@ An app that it is designed to tell you when is the right time to do the concrete
 
 ## Getting Started
 
-This project currently is only available for iOS
+Make sure to allow location priviliges to the app to retrieve the weather from the current location.
 
-In order to run the project you will have to clone the repo and open it up on Xcode (ios/Runner/Runner.xcodeproj) (Sidenote: you will not be able to run it in your device unless you have a developer account, if you have one just change the Signing Profile), and just hit the run button
+### iOS
+
+In order to run the project you will have to clone the repo and open it up on Xcode (ios/Runner/Runner.xcodeproj) (Sidenote: you will not be able to run it in your device unless you have a developer account, if you have one just change the Signing Profile), and just hit the run button.
+
+### Android (not tested yet)
+
+In order to run the project for android open it up in Android Studio, connect your phone and hit the run button.
 
 ## Motivation
 
