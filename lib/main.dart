@@ -178,6 +178,10 @@ class _HomeState extends State<Home> {
               }
           }
         }
+        // TEST DATA
+
+        // data["forecast"]["forecastday"][0]["count"] = null;
+        // data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
       }
     });
 
@@ -206,7 +210,7 @@ class _HomeState extends State<Home> {
                 Container(
                   width: 30,
                   child: InkWell(
-                    child: Text("F", style: TextStyle(fontSize: 20), textAlign: TextAlign.center,),
+                    child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
                     onTap: () {
                       setState(() {
                         temp = "temp_f";
@@ -221,7 +225,7 @@ class _HomeState extends State<Home> {
                 Container(
                   width: 30,
                   child: InkWell(
-                    child: Text("C", style: TextStyle(fontSize: 20), textAlign: TextAlign.center,),
+                    child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
                     onTap: () {
                       setState(() {
                         temp = "temp_c";
@@ -539,8 +543,16 @@ class _DayDetailState extends State<DayDetail> {
               ),
             ),
             SizedBox(height: 30,),
+            widget.data["count"] == null ? Text(
+              "Today is NOT a good day for casting",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 30,
+                color: Colors.white
+              ),
+            ):SizedBox(),
             for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
-              "Recomended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}",
+              "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 30,
