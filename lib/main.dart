@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neumorphic/neumorphic.dart';
 
-
 var apiKey = "2627cfdef0f5433d976172353201310";
 String temp = "temp_c";
 String avgTemp = "avgtemp_c";
@@ -16,25 +15,24 @@ String minTemp = "mintemp_c";
 
 Color colorText = Color.fromRGBO(114, 138, 183, 1);
 Color colorBackground = Color.fromRGBO(240, 240, 243, 1);
-Color detailGreen = Color.fromRGBO(131,219,214,1);
+Color detailGreen = Color.fromRGBO(131, 219, 214, 1);
 Color detailRed = Color.fromRGBO(251, 117, 117, 1);
 
 void main() {
   runApp(MyApp());
 }
 
-
 class PlaceholderWidget extends StatelessWidget {
- final Color color;
+  final Color color;
 
- PlaceholderWidget(this.color);
+  PlaceholderWidget(this.color);
 
- @override
- Widget build(BuildContext context) {
-   return Container(
-     color: color,
-   );
- }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -73,18 +71,20 @@ class HomeTabBar extends StatefulWidget {
 
 class _HomeTabBarState extends State<HomeTabBar> {
 
+  // TabBar View
+
   int _currentIndex = 0;
 
   final List<Widget> _children = [
-   Home(),
-   Info(),
- ];
+    Home(),
+    Info(),
+  ];
 
   void onTabTapped(int index) {
-   setState(() {
-     _currentIndex = index;
-   });
- }
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,16 +92,16 @@ class _HomeTabBarState extends State<HomeTabBar> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: onTabTapped, // this will be set when a new tab is tapped
-       items: [
-         BottomNavigationBarItem(
-           icon: new Icon(Icons.home),
-           label: 'Home',
-         ),
-         BottomNavigationBarItem(
-           icon: new Icon(Icons.info),
-           label: 'Info',
-         ),
-       ],
+        items: [
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: new Icon(Icons.info),
+            label: 'Info',
+          ),
+        ],
       ),
       body: _children[_currentIndex],
     );
@@ -109,12 +109,13 @@ class _HomeTabBarState extends State<HomeTabBar> {
 }
 
 class Home extends StatefulWidget {
-
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+
+  // Home View
 
   final GeolocatorPlatform geolocator = GeolocatorPlatform.instance;
   Position _currentPosition;
@@ -122,33 +123,27 @@ class _HomeState extends State<Home> {
   bool permissionDenied = false;
 
   Future checkPermission() async {
+    // Function check if user has granted location permision
+
     var status = await Permission.location.status;
     print(status);
-    // if (await Permission.speech.isPermanentlyDenied) {
-    //   // The user opted to never again see the permission request dialog for this
-    //   // app. The only way to change the permission's status now is to let the
-    //   // user manually enable it in the system settings.
-      
-    // }
 
-    if (await Permission.location.isDenied || await Permission.location.isRestricted) {
-      
+    if (await Permission.location.isDenied ||
+        await Permission.location.isRestricted) {
+      print("turned truee");
       setState(() {
-        permissionDenied = true;  
+        permissionDenied = true;
       });
-      
+      getWeather();
     }
   }
-
-  
-  
 
   List<String> text = [];
   var data = null;
   int todayGoodCount = 0;
 
   _getCurrentLocation() {
-    
+    // Function to display the dialog to enable location permission to the app.
 
     geolocator
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
@@ -163,400 +158,432 @@ class _HomeState extends State<Home> {
   }
 
   int calculatePercentage(int n) {
-    int x = 15-n;
+    // Function to calculate effieciency percentage based on the temperature
+
+    int x = 15 - n;
     int percentage = x.abs() * 10;
     print(percentage);
-    return(100-percentage);
+    return (100 - percentage);
   }
 
-
   Future getWeather() async {
-    var url = "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
+    // Function to obtain weather data from API
+
+    print("ye");
+    print(permissionDenied);
+    var url = permissionDenied
+        ? "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=37.773972,-122.431297&days=5"
+        : "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
     http.get(url).then((response) {
       var json1 = json.decode(response.body);
       print(response.statusCode);
       if (response.statusCode == 200) {
         data = json1;
-        outer: for(var i = 0; i < json1["forecast"]["forecastday"].length; i++) {
+        print(data);
+        outer:
+        for (var i = 0; i < json1["forecast"]["forecastday"].length; i++) {
           setState(() {
             text.add(json1["forecast"]["forecastday"][i]["date"]);
           });
           todayGoodCount = 0;
-          for(var hour = 0; hour < json1["forecast"]["forecastday"][i]["hour"].length; hour++) {
-              if (json1["forecast"]["forecastday"][i]["hour"][hour]["is_day"] == 1 && int.parse(json1["forecast"]["forecastday"][i]["hour"][hour]["chance_of_rain"]) < 30 && json1["forecast"]["forecastday"][i]["hour"][hour]["will_it_rain"] == 0 && data["forecast"]["forecastday"][i]["hour"][hour][temp] >= 5 && data["forecast"]["forecastday"][i]["hour"][hour][temp] <= 25) {
-                todayGoodCount ++;
-                
-                data["forecast"]["forecastday"][i]["count"] = todayGoodCount;
-                data["forecast"]["forecastday"][i]["hour"][hour]["good"] = true;
-                print(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt());
-                print(calculatePercentage(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt()));
-                data["forecast"]["forecastday"][i]["hour"][hour]["efficiency"] = calculatePercentage(data["forecast"]["forecastday"][i]["hour"][hour][temp].toInt());
-                continue outer;
-              }
+          for (var hour = 0;
+              hour < json1["forecast"]["forecastday"][i]["hour"].length;
+              hour++) {
+            if (json1["forecast"]["forecastday"][i]["hour"][hour]["is_day"] ==
+                    1 &&
+                int.parse(json1["forecast"]["forecastday"][i]["hour"][hour]
+                        ["chance_of_rain"]) <
+                    30 &&
+                json1["forecast"]["forecastday"][i]["hour"][hour]
+                        ["will_it_rain"] ==
+                    0 &&
+                data["forecast"]["forecastday"][i]["hour"][hour][temp] >= 5 &&
+                data["forecast"]["forecastday"][i]["hour"][hour][temp] <= 25) {
+              todayGoodCount++;
+
+              data["forecast"]["forecastday"][i]["count"] = todayGoodCount;
+              data["forecast"]["forecastday"][i]["hour"][hour]["good"] = true;
+              print(data["forecast"]["forecastday"][i]["hour"][hour][temp]
+                  .toInt());
+              print(calculatePercentage(data["forecast"]["forecastday"][i]
+                      ["hour"][hour][temp]
+                  .toInt()));
+              data["forecast"]["forecastday"][i]["hour"][hour]["efficiency"] =
+                  calculatePercentage(data["forecast"]["forecastday"][i]["hour"]
+                          [hour][temp]
+                      .toInt());
+              continue outer;
+            }
           }
         }
-        // TEST DATA
+        // TEST DATA (used to test edge cases)
 
-        data["forecast"]["forecastday"][0]["count"] = null;
-        data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
+        // data["forecast"]["forecastday"][0]["count"] = null;
+        // data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
       }
     });
-
   }
 
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     checkPermission();
-    //getWeather();
-    if (permissionDenied == false ) _getCurrentLocation();
+    if (permissionDenied == false) _getCurrentLocation();
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: NeuAppBar(
         title: Text("Concrete Casting", style: TextStyle(fontSize: 20)),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.all(8.0),
-        //     child: Row(
-        //       children: [
-        //         Container(
-        //           width: 30,
-        //           child: InkWell(
-        //             child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
-        //             onTap: () {
-        //               setState(() {
-        //                 temp = "temp_f";
-        //                 avgTemp = "avgtemp_f";
-        //                 maxTemp = "maxtemp_f";
-        //                 minTemp = "mintemp_f";
-        //               });
-        //             },
-        //           ),
-        //         ),
-        //         SizedBox(width: 10),
-        //         Container(
-        //           width: 30,
-        //           child: InkWell(
-        //             child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.white:Colors.black), textAlign: TextAlign.center,),
-        //             onTap: () {
-        //               setState(() {
-        //                 temp = "temp_c";
-        //                 avgTemp = "avgtemp_c";
-        //                 maxTemp = "maxtemp_c";
-        //                 minTemp = "mintemp_c";
-        //               });
-        //             },
-        //           ),
-        //         )
-        //       ],
-        //     ),
-        //   ),
-        // ],
       ),
       body: ListView.builder(
         itemCount: 1,
         itemBuilder: (BuildContext context, int index) {
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: <Widget>[
-              data != null ? Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(children: <Widget>[
+              data != null
+                  ? Column(
                       children: [
-                        Container(
-                          width: 30,
-                          child: InkWell(
-                            child: Text("F", style: TextStyle(fontSize: 25, color: temp == "temp_f" ? Colors.indigo:Colors.black), textAlign: TextAlign.center,),
-                            onTap: () {
-                              setState(() {
-                                temp = "temp_f";
-                                avgTemp = "avgtemp_f";
-                                maxTemp = "maxtemp_f";
-                                minTemp = "mintemp_f";
-                              });
-                            },
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Container(
-                          width: 30,
-                          child: InkWell(
-                            child: Text("C", style: TextStyle(fontSize: 25, color: temp == "temp_c" ? Colors.indigo:Colors.black), textAlign: TextAlign.center,),
-                            onTap: () {
-                              setState(() {
-                                temp = "temp_c";
-                                avgTemp = "avgtemp_c";
-                                maxTemp = "maxtemp_c";
-                                minTemp = "mintemp_c";
-                              });
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: NeumorphicContainer(bevel: 5, color: colorBackground,child: Text("Today", style: TextStyle(fontSize: 20, color: colorText, fontWeight: FontWeight.bold))),
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(
-                                builder: (BuildContext context) => new DayDetail(data: data["forecast"]["forecastday"][0], today: true, weather: data["current"][temp].toString(),)));
-                    },
-                    child: NeumorphicContainer(
-                      color: colorBackground,
-                      bevel: 3,
-                      // color: Colors.indigo,
-                      child: Stack(
-                        children: <Widget>[
-                          Positioned(
-                            child: Container(
-                              width: MediaQuery.of(context).size.width-200,
-                              height: 170,
-                              decoration: BoxDecoration(
-                                //color: Colors.blue,
-                                borderRadius: BorderRadius.all(Radius.circular(20))
-                              ),
-                            )
-                          ),
-                          Positioned.fill(
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              child: Padding(
-                                padding: const EdgeInsets.all(0.0),
-                                child: Text(
-                                  DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(data["current"]["last_updated_epoch"]*1000)),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 30,
-                                    color: colorText
-                                  ),
-                                ),
-                              ),
-                            )
-                          ),
-                          // Positioned.fill(
-                          //   child: Align(
-                          //     alignment: Alignment.bottomCenter,
-                          //     child: Padding(
-                          //       padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
-                          //       child: Image.network("http:${data["forecast"]["forecastday"][0]["day"]["condition"]["icon"]}")
-                          //     ),
-                          //   )
-                          // ),
-                          Positioned.fill(
-                            child: Align(
-                              alignment: Alignment.center,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "${data["current"][temp].toString()}º",
-                                  style: TextStyle(
-                                    fontSize: 70,
-                                    color: colorText,
-                                    fontWeight: FontWeight.bold
-                                  ),
-                                ),
-                              ),
-                            )
-                          ),
-                          data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
-                            top: 0,
-                            left: 5,
-                            child: Opacity(
-                              opacity: 1,
-                              child: Container(
+                        permissionDenied
+                            ? Text(
+                                "Location not found, using San Francisco as location.\nPlease grant location permission",
+                                style: TextStyle(fontWeight: FontWeight.bold))
+                            : SizedBox(),
+                        SizedBox(height: 10),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
                                 width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: colorText,
-                                  shape: BoxShape.circle,
+                                child: InkWell(
+                                  child: Text(
+                                    "F",
+                                    style: TextStyle(
+                                        fontSize: 25,
+                                        color: temp == "temp_f"
+                                            ? Colors.indigo
+                                            : Colors.black),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      temp = "temp_f";
+                                      avgTemp = "avgtemp_f";
+                                      maxTemp = "maxtemp_f";
+                                      minTemp = "mintemp_f";
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Container(
+                                width: 30,
+                                child: InkWell(
+                                  child: Text(
+                                    "C",
+                                    style: TextStyle(
+                                        fontSize: 25,
+                                        color: temp == "temp_c"
+                                            ? Colors.indigo
+                                            : Colors.black),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      temp = "temp_c";
+                                      avgTemp = "avgtemp_c";
+                                      maxTemp = "maxtemp_c";
+                                      minTemp = "mintemp_c";
+                                    });
+                                  },
                                 ),
                               )
-                            )
+                            ],
                           ),
-                          data["forecast"]["forecastday"][0]["count"] == null ? SizedBox() : Positioned(
-                          top: 0,
-                          left: 5,
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            child: Center(
-                              child: Text(
-                                "${data["forecast"]["forecastday"][0]["count"].toString()}",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.white
-                                ),
-                              )
-                            )
-                          )
                         ),
-                        ]
-                      ),
-                    ),
-                  ),
-                ],
-              ):SizedBox(),
-
-              SizedBox(height: 10),
-              if (permissionDenied == true) 
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Location permission denied, please allow it to retrieve weather", style: TextStyle(
-                    fontSize: 30,
-
-                  ),textAlign: TextAlign.center,),
-                )
-               else if (data == null && permissionDenied == false)  Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(child: CircularProgressIndicator()),
-              )
-              
-              else Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: NeumorphicContainer(bevel: 5, color: colorBackground,child: Text("Next Days", style: TextStyle(fontSize: 20, color: colorText, fontWeight: FontWeight.bold))),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                    children: <Widget>[
-                      for (var i = 1; i<data["forecast"]["forecastday"].length; i++) Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
+                        Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: NeumorphicContainer(
+                                  bevel: 5,
+                                  color: colorBackground,
+                                  child: Text("Today",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          color: colorText,
+                                          fontWeight: FontWeight.bold))),
+                            ),
+                          ],
+                        ),
+                        GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(
-                                builder: (BuildContext context) => new DayDetail(data: data["forecast"]["forecastday"][i], today: false, weather: "",)));
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        new DayDetail(
+                                          data: data["forecast"]["forecastday"]
+                                              [0],
+                                          today: true,
+                                          weather:
+                                              data["current"][temp].toString(),
+                                        )));
                           },
                           child: NeumorphicContainer(
-                            color: Color.fromRGBO(240, 240, 243, 1),
+                            color: colorBackground,
                             bevel: 3,
-                                                      child: Stack(
-                              children: <Widget>[
-                                Positioned(
+                            child: Stack(children: <Widget>[
+                              Positioned(
                                   child: Container(
-                                    width: MediaQuery.of(context).size.width-200,
-                                    height: 250,
-                                    decoration: BoxDecoration(
-                                      //color: Colors.blue,
-                                      borderRadius: BorderRadius.all(Radius.circular(20))
-                                    ),
-                                  )
-                                ),
-                                Positioned.fill(
+                                width: MediaQuery.of(context).size.width - 200,
+                                height: 170,
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(20))),
+                              )),
+                              Positioned.fill(
                                   child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: Padding(
-                                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                                      child: Image.network("http:${data["forecast"]["forecastday"][i]["day"]["condition"]["icon"]}")
-                                      // child: Text(
-                                      //   "${data["forecast"]["forecastday"][i]["day"]["condition"]["text"]}",
-                                      //   style: TextStyle(
-                                      //     fontSize: 20,
-                                      //     color: Colors.white
-                                      //   ),
-                                      //   textAlign: TextAlign.center,
-                                      // ),
-                                    ),
-                                  )
-                                ),
-                                Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(0.0),
-                                    child: Text(
-                                      DateFormat('EEE').format(DateTime.fromMillisecondsSinceEpoch(data["forecast"]["forecastday"][i]["date_epoch"]*1000)),
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 30,
-                                        color: colorText
-                                      ),
-                                    ),
+                                alignment: Alignment.topCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: Text(
+                                    DateFormat('EEEE').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                            data["current"]
+                                                    ["last_updated_epoch"] *
+                                                1000)),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 30, color: colorText),
                                   ),
-                                )
-                              ),
-                                Positioned.fill(
+                                ),
+                              )),
+                              // Positioned.fill(
+                              //   child: Align(
+                              //     alignment: Alignment.bottomCenter,
+                              //     child: Padding(
+                              //       padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                              //       child: Image.network("http:${data["forecast"]["forecastday"][0]["day"]["condition"]["icon"]}")
+                              //     ),
+                              //   )
+                              // ),
+                              Positioned.fill(
                                   child: Align(
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "${data["forecast"]["forecastday"][i]["day"][avgTemp].toString()}º",
-                                      style: TextStyle(
+                                alignment: Alignment.center,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "${data["current"][temp].toString()}º",
+                                    style: TextStyle(
                                         fontSize: 70,
-                                        color: Color.fromRGBO(114, 138, 183, 1),
-                                        fontWeight: FontWeight.bold
-                                      ),
-                                    ),
-                                  )
-                                ),
-                                data["forecast"]["forecastday"][i]["count"] == null ? SizedBox() :Positioned(
-                                  top: 5,
-                                  left: 10,
-                                  child: Opacity(
-                                    opacity: 1,
-                                    child: Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
                                         color: colorText,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    )
-                                  )
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                                data["forecast"]["forecastday"][i]["count"] == null ? SizedBox() : Positioned(
-                                top: 5,
-                                left: 10,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  child: Center(
-                                    child: Text(
-                                      "${data["forecast"]["forecastday"][i]["count"].toString()}",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white
-                                      ),
-                                    )
-                                  )
-                                )
-                              ),
-                              ]
-                            ),
+                              )),
+                              data["forecast"]["forecastday"][0]["count"] ==
+                                      null
+                                  ? SizedBox()
+                                  : Positioned(
+                                      top: 0,
+                                      left: 5,
+                                      child: Opacity(
+                                          opacity: 1,
+                                          child: Container(
+                                            width: 30,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              color: colorText,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ))),
+                              data["forecast"]["forecastday"][0]["count"] ==
+                                      null
+                                  ? SizedBox()
+                                  : Positioned(
+                                      top: 0,
+                                      left: 5,
+                                      child: Container(
+                                          width: 30,
+                                          height: 30,
+                                          child: Center(
+                                              child: Text(
+                                            "${data["forecast"]["forecastday"][0]["count"].toString()}",
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                color: Colors.white),
+                                          )))),
+                            ]),
                           ),
                         ),
-                      ),
-                    ]
+                      ],
                     )
-                  ),
-                ],
-              )    
+                  : SizedBox(),
 
-              
-                         
-            ]
-          ),
-        );
-       },
+              SizedBox(height: 10),
+              // if (permissionDenied == true)
+              //   Padding(
+              //     padding: const EdgeInsets.all(8.0),
+              //     child: Text("Location permission denied, please allow it to retrieve weather", style: TextStyle(
+              //       fontSize: 30,
+
+              //     ),textAlign: TextAlign.center,),
+              //   )
+              //  else
+              if (data == null /*&& permissionDenied == false*/)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: NeumorphicContainer(
+                          bevel: 5,
+                          color: colorBackground,
+                          child: Text("Next Days",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: colorText,
+                                  fontWeight: FontWeight.bold))),
+                    ),
+                    SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(children: <Widget>[
+                          for (var i = 1;
+                              i < data["forecast"]["forecastday"].length;
+                              i++)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              new DayDetail(
+                                                data: data["forecast"]
+                                                    ["forecastday"][i],
+                                                today: false,
+                                                weather: "",
+                                              )));
+                                },
+                                child: NeumorphicContainer(
+                                  color: Color.fromRGBO(240, 240, 243, 1),
+                                  bevel: 3,
+                                  child: Stack(children: <Widget>[
+                                    Positioned(
+                                        child: Container(
+                                      width: MediaQuery.of(context).size.width -
+                                          200,
+                                      height: 250,
+                                      decoration: BoxDecoration(
+                                          //color: Colors.blue,
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20))),
+                                    )),
+                                    Positioned.fill(
+                                        child: Align(
+                                      alignment: Alignment.bottomCenter,
+                                      child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              0, 0, 0, 20),
+                                          child: Image.network(
+                                              "http:${data["forecast"]["forecastday"][i]["day"]["condition"]["icon"]}")
+                                          // child: Text(
+                                          //   "${data["forecast"]["forecastday"][i]["day"]["condition"]["text"]}",
+                                          //   style: TextStyle(
+                                          //     fontSize: 20,
+                                          //     color: Colors.white
+                                          //   ),
+                                          //   textAlign: TextAlign.center,
+                                          // ),
+                                          ),
+                                    )),
+                                    Positioned.fill(
+                                        child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(0.0),
+                                        child: Text(
+                                          DateFormat('EEE').format(DateTime
+                                              .fromMillisecondsSinceEpoch(
+                                                  data["forecast"]
+                                                              ["forecastday"][i]
+                                                          ["date_epoch"] *
+                                                      1000)),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 30, color: colorText),
+                                        ),
+                                      ),
+                                    )),
+                                    Positioned.fill(
+                                        child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "${data["forecast"]["forecastday"][i]["day"][avgTemp].toString()}º",
+                                        style: TextStyle(
+                                            fontSize: 70,
+                                            color: Color.fromRGBO(
+                                                114, 138, 183, 1),
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    )),
+                                    data["forecast"]["forecastday"][i]
+                                                ["count"] ==
+                                            null
+                                        ? SizedBox()
+                                        : Positioned(
+                                            top: 5,
+                                            left: 10,
+                                            child: Opacity(
+                                                opacity: 1,
+                                                child: Container(
+                                                  width: 30,
+                                                  height: 30,
+                                                  decoration: BoxDecoration(
+                                                    color: colorText,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ))),
+                                    data["forecast"]["forecastday"][i]
+                                                ["count"] ==
+                                            null
+                                        ? SizedBox()
+                                        : Positioned(
+                                            top: 5,
+                                            left: 10,
+                                            child: Container(
+                                                width: 30,
+                                                height: 30,
+                                                child: Center(
+                                                    child: Text(
+                                                  "${data["forecast"]["forecastday"][i]["count"].toString()}",
+                                                  style: TextStyle(
+                                                      fontSize: 20,
+                                                      color: Colors.white),
+                                                )))),
+                                  ]),
+                                ),
+                              ),
+                            ),
+                        ])),
+                  ],
+                )
+            ]),
+          );
+        },
       ),
     );
   }
@@ -575,175 +602,168 @@ class DayDetail extends StatefulWidget {
 
 class _DayDetailState extends State<DayDetail> {
 
+  // Day Detail View
+
   @override
-  void initState() { 
+  void initState() {
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false)),
-        ),
-        backgroundColor: Colors.white,
-      ),
-      body: Container(
-        color: widget.data["count"] != null ? detailGreen:detailRed,
-        child: ListView(
-              children: <Widget>[
-                // elementos que van dentro del scrollView
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false))}",
-                        style: TextStyle(
-          fontSize: 30,
-          color: Colors.white
-                        )
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-          widget.today ? "${widget.weather}º" : "${widget.data["day"][avgTemp].toString()}º",
-          style: TextStyle(
-            fontSize: 130,
-            color: Colors.white,
-            fontWeight: FontWeight.bold
-          ), textAlign: TextAlign.center,
-                  ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-          children: [
-            Opacity(
-              opacity: 0.6,
-              child: Text(
-                "${widget.data["day"][minTemp].toString()}º",
-                style: TextStyle(
-                  fontSize: 40,
-                  color: Colors.white
-                )
-              ),
-            ),
-            Spacer(),
-            Text(
-              "${widget.data["day"][maxTemp].toString()}º",
-              style: TextStyle(
-                fontSize: 40,
-                color: Colors.white
-              )
-            ),
-          ],
-                  ),
-                ),
-                SizedBox(height: 30,),
-                widget.data["count"] == null ? Text(
-                  "Today is NOT a good day for casting",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-          fontSize: 30,
-          color: Colors.white
-                  ),
-                ):SizedBox(),
-                for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
-                  "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}\n\n Efficiency in casting: %${widget.data["hour"][i]["efficiency"].toString()}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-          fontSize: 30,
-          color: Colors.white
-                  ),
-                ):SizedBox(),
-                //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
-                Spacer(),
-                SizedBox(height: 30),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: SafeArea(
-                        child: Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(20))
-            ),
-            child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                children: <Widget>[
-                  for(var i = 0; i<widget.data["hour"].length; i++) InkWell(
-                    onTap: () {
-                      Navigator.push(context, SlideRightRoute(page: DetailHour(data: widget.data["hour"][i])));
-                    }, 
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Stack(
-                        children: [
-            Positioned(
-              child: Container(
-                width: MediaQuery.of(context).size.width-300,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: widget.data["hour"][i]["good"] == true ? detailGreen: widget.data["hour"][i]["time_epoch"] == DateTime.now() ? detailRed : colorText,
-                  borderRadius: BorderRadius.all(Radius.circular(10))
-                ),
-              )
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: Text(
-                    widget.data["hour"][i]["time"].substring(11),
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white
-                    ),
-                  ),
-                ),
-              )
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  "${widget.data["hour"][i][temp].toString()}º",
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white
-                  ),
-                ),
-              )
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Image.network("http:${widget.data["hour"][i]["condition"]["icon"]}", height: 40,)
-              )
-            ),
-                        ]
-                      ),
-                    ),
-                  )
-                ]
-                )
-              ),
+        appBar: AppBar(
+          title: Text(
+            DateFormat('MMMMd').format(DateTime.fromMillisecondsSinceEpoch(
+                widget.data["date_epoch"] * 1000,
+                isUtc: false)),
           ),
+          backgroundColor: Colors.white,
+        ),
+        body: Container(
+          color: widget.data["count"] != null ? detailGreen : detailRed,
+          child: ListView(
+            children: <Widget>[
+              // elementos que van dentro del scrollView
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                        "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"] * 1000, isUtc: false))}",
+                        style: TextStyle(fontSize: 30, color: Colors.white)),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                widget.today
+                    ? "${widget.weather}º"
+                    : "${widget.data["day"][avgTemp].toString()}º",
+                style: TextStyle(
+                    fontSize: 130,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  children: [
+                    Opacity(
+                      opacity: 0.6,
+                      child: Text("${widget.data["day"][minTemp].toString()}º",
+                          style: TextStyle(fontSize: 40, color: Colors.white)),
+                    ),
+                    Spacer(),
+                    Text("${widget.data["day"][maxTemp].toString()}º",
+                        style: TextStyle(fontSize: 40, color: Colors.white)),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 30,
+              ),
+              widget.data["count"] == null
+                  ? Text(
+                      "Today is NOT a good day for casting",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 30, color: Colors.white),
+                    )
+                  : SizedBox(),
+              for (var i = 0; i < widget.data["hour"].length; i++)
+                widget.data["hour"][i]["good"] == true
+                    ? Text(
+                        "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}\n\n Efficiency in casting: %${widget.data["hour"][i]["efficiency"].toString()}",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 30, color: Colors.white),
+                      )
+                    : SizedBox(),
+              //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
+              Spacer(),
+              SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: SafeArea(
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(children: <Widget>[
+                          for (var i = 0; i < widget.data["hour"].length; i++)
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    SlideRightRoute(
+                                        page: DetailHour(
+                                            data: widget.data["hour"][i])));
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Stack(children: [
+                                  Positioned(
+                                      child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width - 300,
+                                    height: 120,
+                                    decoration: BoxDecoration(
+                                        color: widget.data["hour"][i]["good"] ==
+                                                true
+                                            ? detailGreen
+                                            : widget.data["hour"][i]
+                                                        ["time_epoch"] ==
+                                                    DateTime.now()
+                                                ? detailRed
+                                                : colorText,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10))),
+                                  )),
+                                  Positioned.fill(
+                                      child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Text(
+                                        widget.data["hour"][i]["time"]
+                                            .substring(11),
+                                        style: TextStyle(
+                                            fontSize: 15, color: Colors.white),
+                                      ),
+                                    ),
+                                  )),
+                                  Positioned.fill(
+                                      child: Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      "${widget.data["hour"][i][temp].toString()}º",
+                                      style: TextStyle(
+                                          fontSize: 20, color: Colors.white),
+                                    ),
+                                  )),
+                                  Positioned.fill(
+                                      child: Align(
+                                          alignment: Alignment.bottomCenter,
+                                          child: Image.network(
+                                            "http:${widget.data["hour"][i]["condition"]["icon"]}",
+                                            height: 40,
+                                          ))),
+                                ]),
+                              ),
+                            )
+                        ])),
                   ),
-                )
-              ],
-            ),
-      )
-
-    );
+                ),
+              )
+            ],
+          ),
+        ));
   }
 }
-
 
 class DetailHour extends StatefulWidget {
   DetailHour({Key key, this.data}) : super(key: key);
@@ -754,134 +774,136 @@ class DetailHour extends StatefulWidget {
 }
 
 class _DetailHourState extends State<DetailHour> {
+
+  // Detail Hour View
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(widget.data["time"].substring(11)),
-        leading: IconButton(icon: Icon(Icons.close), onPressed: () {
-          Navigator.of(context).pop();
-        },),
+        leading: IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: ListView.builder(
         itemCount: 1,
         itemBuilder: (BuildContext context, int index) {
-        return Table(
-          border: TableBorder(horizontalInside: BorderSide(width: 1, color: colorText, style: BorderStyle.solid)),
-          //columnWidths: {0: FractionColumnWidth(.4), 1: FractionColumnWidth(.2), 2: FractionColumnWidth(.4)},
-          children: [
-            TableRow(
-              children: [
+          return Table(
+            border: TableBorder(
+                horizontalInside: BorderSide(
+                    width: 1, color: colorText, style: BorderStyle.solid)),
+            //columnWidths: {0: FractionColumnWidth(.4), 1: FractionColumnWidth(.2), 2: FractionColumnWidth(.4)},
+            children: [
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Temperature", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("${widget.data[temp].toString()}º", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Temperature",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("${widget.data[temp].toString()}º",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-            TableRow(
-              children: [
+              ]),
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Wind", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("${widget.data["wind_mph"].toString()} MPH", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Wind",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("${widget.data["wind_mph"].toString()} MPH",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-            TableRow(
-              children: [
+              ]),
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Wind Degree", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("${widget.data["wind_degree"].toString()}º", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Wind Degree",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("${widget.data["wind_degree"].toString()}º",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-            TableRow(
-              children: [
+              ]),
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Wind Direction", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("${widget.data["wind_dir"].toString()}", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Wind Direction",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("${widget.data["wind_dir"].toString()}",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-            TableRow(
-              children: [
+              ]),
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Humidity", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("%${widget.data["humidity"].toString()}", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Humidity",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("%${widget.data["humidity"].toString()}",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-            TableRow(
-              children: [
+              ]),
+              TableRow(children: [
                 Container(
                   height: 50,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text("Chance of Rain", style: TextStyle(
-                        fontSize: 20,
-                      )),
-                      Text("%${widget.data["chance_of_rain"].toString()}", style: TextStyle(
-                        fontSize: 20,
-                      ))
-                    ]
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Text("Chance of Rain",
+                            style: TextStyle(
+                              fontSize: 20,
+                            )),
+                        Text("%${widget.data["chance_of_rain"].toString()}",
+                            style: TextStyle(
+                              fontSize: 20,
+                            ))
+                      ]),
                 )
-              ]
-            ),
-          ],
-        );
-       },
+              ]),
+            ],
+          );
+        },
       ),
     );
   }
@@ -895,6 +917,9 @@ class Info extends StatefulWidget {
 }
 
 class _InfoState extends State<Info> {
+
+  // Info View
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -905,71 +930,80 @@ class _InfoState extends State<Info> {
       body: ListView.builder(
         itemCount: 1,
         itemBuilder: (BuildContext context, int index) {
-        return Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            children: [
-              Text("The ACI defines cold weather when the average daily temperature for more than three consecutive days is less than 5° C and if the temperature rises above 10° C for more than half a day it is no longer considered cold weather.\n\nAci defines hot weather when any combination of high air temperature, low relative humidity, and ambient velocity affect the quality of fresh and hardened ants.", style: TextStyle(fontSize: 20)),
-              SizedBox(height: 20),
-              Text("Preparation of Mixture", style: TextStyle(
-                fontSize: 30
-              ),),
-              Divider(),
-              Text(
-                "The ideal temperature for the placing of concrete is 15º C, which is imposible to optain in warm weather. There should be the best effort done to get the concrete below 30º C by using ice",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                fontSize: 20,
-              ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                "Formula to determine how much ice should be used in concrete.",
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                fontSize: 20
-              ),
-              ),
-              Image.asset("assets/formula.png"),
-              SizedBox(height: 10),
-              Text("Placing of Concrete", style: TextStyle(
-                fontSize: 30
-              ),),
-              Divider(),
-              Text("To mantain the quality of the concrete during the process of casting the following is recomended:\n",style: TextStyle(
-                fontSize: 20
-              ),),
-              Text("· The terrain must be wet\n\n· If there is a delay in the casting apply mist type irrigation\n\n· If cold joints have formed it is recommended to moisten with cement grout before placing the fresh concrete\n\n· The cracks should be filled with a cement mortar grout or some epoxy glue\n\n· In the case of massive castings and concrete with a high cement content, the effects described above are magnified so additional precautions should be taken\n\n· It will be preferable to place the concrete in hours of lower temperature and even do it at night",style: TextStyle(
-                fontSize: 20
-              ),),
-              SizedBox(height: 10),
-              Text("Dosing of Concrete", style: TextStyle(
-                fontSize: 30
-              ),),
-              Divider(),
-              Text("When temperatures lower than the limit indicated (5º C) are estimated, it is convenient to have alternative design mixtures so that the work can be continued in normal ways",style: TextStyle(
-                fontSize: 20
-              ),),
-              SizedBox(height: 10),
-              Text("Design of Alternative Mixtures", style: TextStyle(
-                fontSize: 30
-              ), textAlign: TextAlign.center,),
-              Divider(),
-              Text("Any of the following procedures can be used:\n",style: TextStyle(
-                fontSize: 20
-              ),),
-              Text("· Bigger dose of cement\n\n· More resistant cement\n\n· Additives to reduce water/cement ratio",style: TextStyle(
-                fontSize: 20
-              ),)
-            ],
-          ),
-        );
-       },
+          return Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              children: [
+                Text(
+                    "The ACI defines cold weather when the average daily temperature for more than three consecutive days is less than 5° C and if the temperature rises above 10° C for more than half a day it is no longer considered cold weather.\n\nAci defines hot weather when any combination of high air temperature, low relative humidity, and ambient velocity affect the quality of fresh and hardened ants.",
+                    style: TextStyle(fontSize: 20)),
+                SizedBox(height: 20),
+                Text(
+                  "Preparation of Mixture",
+                  style: TextStyle(fontSize: 30),
+                ),
+                Divider(),
+                Text(
+                  "The ideal temperature for the placing of concrete is 15º C, which is imposible to optain in warm weather. There should be the best effort done to get the concrete below 30º C by using ice",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Formula to determine how much ice should be used in concrete.",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(fontSize: 20),
+                ),
+                Image.asset("assets/formula.png"),
+                SizedBox(height: 10),
+                Text(
+                  "Placing of Concrete",
+                  style: TextStyle(fontSize: 30),
+                ),
+                Divider(),
+                Text(
+                  "To mantain the quality of the concrete during the process of casting the following is recomended:\n",
+                  style: TextStyle(fontSize: 20),
+                ),
+                Text(
+                  "· The terrain must be wet\n\n· If there is a delay in the casting apply mist type irrigation\n\n· If cold joints have formed it is recommended to moisten with cement grout before placing the fresh concrete\n\n· The cracks should be filled with a cement mortar grout or some epoxy glue\n\n· In the case of massive castings and concrete with a high cement content, the effects described above are magnified so additional precautions should be taken\n\n· It will be preferable to place the concrete in hours of lower temperature and even do it at night",
+                  style: TextStyle(fontSize: 20),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Dosing of Concrete",
+                  style: TextStyle(fontSize: 30),
+                ),
+                Divider(),
+                Text(
+                  "When temperatures lower than the limit indicated (5º C) are estimated, it is convenient to have alternative design mixtures so that the work can be continued in normal ways",
+                  style: TextStyle(fontSize: 20),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Design of Alternative Mixtures",
+                  style: TextStyle(fontSize: 30),
+                  textAlign: TextAlign.center,
+                ),
+                Divider(),
+                Text(
+                  "Any of the following procedures can be used:\n",
+                  style: TextStyle(fontSize: 20),
+                ),
+                Text(
+                  "· Bigger dose of cement\n\n· More resistant cement\n\n· Additives to reduce water/cement ratio",
+                  style: TextStyle(fontSize: 20),
+                )
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
-
 
 class SlideRightRoute extends PageRouteBuilder {
   final Widget page;
@@ -988,15 +1022,14 @@ class SlideRightRoute extends PageRouteBuilder {
             Widget child,
           ) =>
               SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 1),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
         );
 }
-
 
 // From https://medium.com/flutter-community/neumorphic-designs-in-flutter-eab9a4de2059
 
@@ -1060,18 +1093,20 @@ class _NeumorphicContainerState extends State<NeumorphicContainer> {
                 .6,
                 1.0,
               ]),
-          boxShadow: _isPressed ? null : [
-            BoxShadow(
-              blurRadius: widget.bevel,
-              offset: -widget.blurOffset,
-              color: color.mix(Colors.white, .6),
-            ),
-            BoxShadow(
-              blurRadius: widget.bevel,
-              offset: widget.blurOffset,
-              color: color.mix(Colors.black, .3),
-            )
-          ],
+          boxShadow: _isPressed
+              ? null
+              : [
+                  BoxShadow(
+                    blurRadius: widget.bevel,
+                    offset: -widget.blurOffset,
+                    color: color.mix(Colors.white, .6),
+                  ),
+                  BoxShadow(
+                    blurRadius: widget.bevel,
+                    offset: widget.blurOffset,
+                    color: color.mix(Colors.black, .3),
+                  )
+                ],
         ),
         child: widget.child,
       ),
