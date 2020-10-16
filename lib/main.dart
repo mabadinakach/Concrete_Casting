@@ -163,8 +163,10 @@ class _HomeState extends State<Home> {
   }
 
   int calculatePercentage(int n) {
-    int x = 15-n.abs();
-    return(100-x*10);
+    int x = 15-n;
+    int percentage = x.abs() * 10;
+    print(percentage);
+    return(100-percentage);
   }
 
 
@@ -588,147 +590,156 @@ class _DayDetailState extends State<DayDetail> {
       ),
       body: Container(
         color: widget.data["count"] != null ? detailGreen:detailRed,
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 30),
-              Text(
-                "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false))}",
+        child: ListView(
+              children: <Widget>[
+                // elementos que van dentro del scrollView
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(widget.data["date_epoch"]*1000, isUtc: false))}",
+                        style: TextStyle(
+          fontSize: 30,
+          color: Colors.white
+                        )
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+          widget.today ? "${widget.weather}º" : "${widget.data["day"][avgTemp].toString()}º",
+          style: TextStyle(
+            fontSize: 130,
+            color: Colors.white,
+            fontWeight: FontWeight.bold
+          ), textAlign: TextAlign.center,
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+          children: [
+            Opacity(
+              opacity: 0.6,
+              child: Text(
+                "${widget.data["day"][minTemp].toString()}º",
                 style: TextStyle(
-        fontSize: 30,
-        color: Colors.white
+                  fontSize: 40,
+                  color: Colors.white
                 )
               ),
-              SizedBox(height: 20),
-              Text(
-        widget.today ? "${widget.weather}º" : "${widget.data["day"][avgTemp].toString()}º",
-        style: TextStyle(
-          fontSize: 140,
-          color: Colors.white,
-          fontWeight: FontWeight.bold
-        )
-                ),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-        children: [
-          Opacity(
-            opacity: 0.6,
-            child: Text(
-              "${widget.data["day"][minTemp].toString()}º",
+            ),
+            Spacer(),
+            Text(
+              "${widget.data["day"][maxTemp].toString()}º",
               style: TextStyle(
                 fontSize: 40,
                 color: Colors.white
               )
             ),
-          ),
-          Spacer(),
-          Text(
-            "${widget.data["day"][maxTemp].toString()}º",
-            style: TextStyle(
-              fontSize: 40,
-              color: Colors.white
-            )
-          ),
-        ],
+          ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 30,),
-              widget.data["count"] == null ? Text(
-                "Today is NOT a good day for casting",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-        fontSize: 30,
-        color: Colors.white
-                ),
-              ):SizedBox(),
-              for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
-                "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}\n\n Efficiency in casting: %${widget.data["hour"][i]["efficiency"].toString()}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-        fontSize: 30,
-        color: Colors.white
-                ),
-              ):SizedBox(),
-              //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
-              Spacer(),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SafeArea(
-                      child: Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(20))
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-            children: <Widget>[
-              for(var i = 0; i<widget.data["hour"].length; i++) InkWell(
-                onTap: () {
-                  Navigator.push(context, SlideRightRoute(page: DetailHour(data: widget.data["hour"][i])));
-                }, 
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Stack(
-                    children: [
-                      Positioned(
+                SizedBox(height: 30,),
+                widget.data["count"] == null ? Text(
+                  "Today is NOT a good day for casting",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+          fontSize: 30,
+          color: Colors.white
+                  ),
+                ):SizedBox(),
+                for (var i = 0; i<widget.data["hour"].length; i++) widget.data["hour"][i]["good"] == true ? Text(
+                  "Recommended time to start casting: ${widget.data["hour"][i]["time"].substring(11)}\n\n Efficiency in casting: %${widget.data["hour"][i]["efficiency"].toString()}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+          fontSize: 30,
+          color: Colors.white
+                  ),
+                ):SizedBox(),
+                //Image.network("http:${widget.data["day"]["condition"]["icon"]}"),
+                Spacer(),
+                SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: SafeArea(
                         child: Container(
-                          width: MediaQuery.of(context).size.width-350,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: widget.data["hour"][i]["good"] == true ? detailGreen: widget.data["hour"][i]["time_epoch"] == DateTime.now() ? detailRed : colorText,
-                            borderRadius: BorderRadius.all(Radius.circular(10))
-                          ),
-                        )
-                      ),
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Align(
-                            alignment: Alignment.topCenter,
-                            child: Text(
-                              widget.data["hour"][i]["time"].substring(11),
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.white
-                              ),
-                            ),
-                          ),
-                        )
-                      ),
-                      Positioned.fill(
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "${widget.data["hour"][i][temp].toString()}º",
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.white
-                            ),
-                          ),
-                        )
-                      ),
-                      Positioned.fill(
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Image.network("http:${widget.data["hour"][i]["condition"]["icon"]}", height: 40,)
-                        )
-                      ),
-                    ]
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.all(Radius.circular(20))
+            ),
+            child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                children: <Widget>[
+                  for(var i = 0; i<widget.data["hour"].length; i++) InkWell(
+                    onTap: () {
+                      Navigator.push(context, SlideRightRoute(page: DetailHour(data: widget.data["hour"][i])));
+                    }, 
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Stack(
+                        children: [
+            Positioned(
+              child: Container(
+                width: MediaQuery.of(context).size.width-300,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: widget.data["hour"][i]["good"] == true ? detailGreen: widget.data["hour"][i]["time_epoch"] == DateTime.now() ? detailRed : colorText,
+                  borderRadius: BorderRadius.all(Radius.circular(10))
+                ),
+              )
+            ),
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Text(
+                    widget.data["hour"][i]["time"].substring(11),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white
+                    ),
                   ),
                 ),
               )
-            ]
-            )
-          ),
-        ),
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  "${widget.data["hour"][i][temp].toString()}º",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white
+                  ),
                 ),
               )
-            ],
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Image.network("http:${widget.data["hour"][i]["condition"]["icon"]}", height: 40,)
+              )
+            ),
+                        ]
+                      ),
+                    ),
+                  )
+                ]
+                )
+              ),
           ),
-      ),
+                  ),
+                )
+              ],
+            ),
+      )
+
     );
   }
 }
