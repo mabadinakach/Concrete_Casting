@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:neumorphic/neumorphic.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 var apiKey = "2627cfdef0f5433d976172353201310";
 String temp = "temp_c";
@@ -121,21 +122,43 @@ class _HomeState extends State<Home> {
   Position _currentPosition;
 
   bool permissionDenied = false;
+  bool web = false;
+
+  var lat = "";
+  var long = "";
 
   Future checkPermission() async {
     // Function check if user has granted location permision
+    if (kIsWeb) {
+      print("WEEEB");
+      // running on the web!
+      http.get("https://geolocation-db.com/json/").then((response) {
+        var json1 = json.decode(response.body);
+        print(json1["latitude"]);
 
-    var status = await Permission.location.status;
-    print(status);
+        setState(() {
+          web = true;
+          lat = json1["latitude"].toString();
+          long = json1["longitude"].toString();
+        });
+        getWeather();
+        
 
-    if (await Permission.location.isDenied ||
-        await Permission.location.isRestricted) {
-      print("turned truee");
-      setState(() {
-        permissionDenied = true;
       });
-      getWeather();
+    } else {
+      var status = await Permission.location.status;
+      print(status);
+      // NOT running on the web! You can check for additional platforms here.
+      if (await Permission.location.isDenied ||
+        await Permission.location.isRestricted) {
+        print("turned truee");
+        setState(() {
+          permissionDenied = true;
+        });
+        getWeather();
+      }
     }
+
   }
 
   List<String> text = [];
@@ -159,27 +182,22 @@ class _HomeState extends State<Home> {
 
   int calculatePercentage(int n) {
     // Function to calculate effieciency percentage based on the temperature
-
     int x = 15 - n;
     int percentage = x.abs() * 10;
-    print(percentage);
     return (100 - percentage);
   }
 
   Future getWeather() async {
     // Function to obtain weather data from API
-
-    print("ye");
-    print(permissionDenied);
     var url = permissionDenied
-        ? "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=37.773972,-122.431297&days=5"
-        : "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
+        ? "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=37.773972,-122.431297&days=5" :
+        web ? "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${lat},${long}&days=5" : "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=${_currentPosition.latitude},${_currentPosition.longitude}&days=5";
+    print(url);
     http.get(url).then((response) {
       var json1 = json.decode(response.body);
       print(response.statusCode);
       if (response.statusCode == 200) {
         data = json1;
-        print(data);
         outer:
         for (var i = 0; i < json1["forecast"]["forecastday"].length; i++) {
           setState(() {
@@ -203,11 +221,6 @@ class _HomeState extends State<Home> {
 
               data["forecast"]["forecastday"][i]["count"] = todayGoodCount;
               data["forecast"]["forecastday"][i]["hour"][hour]["good"] = true;
-              print(data["forecast"]["forecastday"][i]["hour"][hour][temp]
-                  .toInt());
-              print(calculatePercentage(data["forecast"]["forecastday"][i]
-                      ["hour"][hour][temp]
-                  .toInt()));
               data["forecast"]["forecastday"][i]["hour"][hour]["efficiency"] =
                   calculatePercentage(data["forecast"]["forecastday"][i]["hour"]
                           [hour][temp]
@@ -216,7 +229,7 @@ class _HomeState extends State<Home> {
             }
           }
         }
-        // TEST DATA (used to test edge cases)
+        //TEST DATA (used to test edge cases)
 
         // data["forecast"]["forecastday"][0]["count"] = null;
         // data["forecast"]["forecastday"][0]["hour"][8]["good"] = false;
@@ -355,8 +368,8 @@ class _HomeState extends State<Home> {
                                   child: Text(
                                     DateFormat('EEEE').format(
                                         DateTime.fromMillisecondsSinceEpoch(
-                                            data["current"]
-                                                    ["last_updated_epoch"] *
+                                            data["forecast"]["forecastday"]
+                                              [0]["date_epoch"] *
                                                 1000)),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
@@ -624,7 +637,6 @@ class _DayDetailState extends State<DayDetail> {
           color: widget.data["count"] != null ? detailGreen : detailRed,
           child: ListView(
             children: <Widget>[
-              // elementos que van dentro del scrollView
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
